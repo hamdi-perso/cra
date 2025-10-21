@@ -6,11 +6,15 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:init": "curl -X POST http://localhost:3000/api/db/init || echo '⚠️  Server must be running. Start with: npm run dev'",
+    "db:seed": "curl -X POST http://localhost:3000/api/db/seed || echo '⚠️  Server must be running. Start with: npm run dev'",
+    "db:setup": "npm run db:init && npm run db:seed"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
     "@radix-ui/react-separator": "^1.1.7",
+    "better-sqlite3": "^12.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.24",
