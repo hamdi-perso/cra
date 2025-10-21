@@ -19,11 +19,11 @@
 - [x] Auth middleware
 - [x] Role-based access control (Employee, Manager, Admin)
 
-## Phase 3: Client & Project Catalogs
-- [ ] Client CRUD operations
-- [ ] Project CRUD operations
-- [ ] Client-Project relationships
-- [ ] List/Grid views with search & filters
+## Phase 3: Client & Project Catalogs ✅
+- [x] Client CRUD operations
+- [x] Project CRUD operations
+- [x] Client-Project relationships
+- [x] List/Grid views with search & filters
 
 ## Phase 4: Activity CRUD + AI Draft
 - [ ] Activity CRUD operations

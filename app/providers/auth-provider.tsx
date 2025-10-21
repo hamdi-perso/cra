@@ -27,7 +27,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('/api/auth/me');
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include', // Ensure cookies are sent
+      });
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
@@ -47,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
+      credentials: 'include', // Ensure cookies are sent/received
     });
 
     if (!response.ok) {
@@ -56,7 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const data = await response.json();
     setUser(data.user);
-    router.push('/');
+
+    // Force full page reload to ensure cookie is available
+    window.location.href = '/';
   };
 
   const register = async (
@@ -78,7 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const data = await response.json();
     setUser(data.user);
-    router.push('/');
+    // Use window.location.href to ensure cookie is available on next request
+    window.location.href = '/';
   };
 
   const logout = async () => {

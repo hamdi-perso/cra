@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getDatabase } from '@/lib/db/init';
 import { hashPassword } from '@/lib/auth/password';
 import { generateToken } from '@/lib/auth/jwt';
-import { setAuthCookie } from '@/lib/auth/session';
 import type { User } from '@/lib/db/schema';
 
 export async function POST(request: NextRequest) {
@@ -83,12 +83,22 @@ export async function POST(request: NextRequest) {
     db.close();
 
     // Generate JWT token
-    const token = generateToken(user);
+    const token = await generateToken(user);
 
-    // Set auth cookie
-    await setAuthCookie(token);
+    // Set auth cookie BEFORE creating response (Next.js 15 requirement)
+    const cookieStore = await cookies();
+    cookieStore.set('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/',
+    });
+
+    console.log('✅ Registration successful, cookie set for user:', user.email);
 
     // Return user data (without password)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
 
     return NextResponse.json({

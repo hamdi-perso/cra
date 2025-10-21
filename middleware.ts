@@ -8,8 +8,24 @@ const publicRoutes = ['/login', '/register'];
 // API routes that don't require authentication
 const publicApiRoutes = ['/api/auth/login', '/api/auth/register'];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Get token from cookie
+  const token = request.cookies.get('auth_token')?.value;
+
+  console.log(`🔍 Middleware: ${pathname} - Token present: ${!!token}`);
+  if (token) {
+    console.log(`🔑 Token (first 50 chars): ${token.substring(0, 50)}`);
+  }
+
+  // If user is authenticated and tries to access auth pages, redirect to dashboard
+  if (token && publicRoutes.includes(pathname)) {
+    const payload = await verifyToken(token);
+    if (payload) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
 
   // Allow public routes
   if (publicRoutes.includes(pathname) || publicApiRoutes.includes(pathname)) {
@@ -20,9 +36,6 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/api/db/')) {
     return NextResponse.next();
   }
-
-  // Get token from cookie
-  const token = request.cookies.get('auth_token')?.value;
 
   // If no token and trying to access protected route, redirect to login
   if (!token) {
@@ -36,18 +49,24 @@ export function middleware(request: NextRequest) {
   }
 
   // Verify token
-  const payload = verifyToken(token);
+  const payload = await verifyToken(token);
 
   if (!payload) {
-    // Token is invalid or expired
+    // Token is invalid or expired, clear cookie and redirect
+    console.log('❌ Token verification failed for:', pathname);
     if (pathname.startsWith('/api/')) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 401 }
       );
     }
-    return NextResponse.redirect(new URL('/login', request.url));
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.delete('auth_token');
+    console.log('🗑️ Deleted auth_token cookie');
+    return response;
   }
+
+  console.log('✅ Token verified for:', payload.email, 'on', pathname);
 
   // Role-based access control
   const { role } = payload;
