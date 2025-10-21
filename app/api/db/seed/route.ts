@@ -3,7 +3,7 @@ import { seedDatabase } from '@/lib/db/seed';
 
 export async function POST() {
   try {
-    seedDatabase();
+    await seedDatabase();
     return NextResponse.json({
       success: true,
       message: 'Database seeded successfully'

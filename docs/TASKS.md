@@ -13,11 +13,11 @@
 - [x] Database initialization with seed data
 - [x] User/Client/Project/Activity models
 
-## Phase 2: Authentication & RBAC
-- [ ] JWT authentication system
-- [ ] Login/Register pages
-- [ ] Auth middleware
-- [ ] Role-based access control (Employee, Manager, Admin)
+## Phase 2: Authentication & RBAC ✅
+- [x] JWT authentication system
+- [x] Login/Register pages
+- [x] Auth middleware
+- [x] Role-based access control (Employee, Manager, Admin)
 
 ## Phase 3: Client & Project Catalogs
 - [ ] Client CRUD operations

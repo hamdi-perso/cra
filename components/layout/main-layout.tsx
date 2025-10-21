@@ -10,52 +10,71 @@ import {
   Users,
   LogOut
 } from 'lucide-react';
+import { useAuth } from '@/app/providers/auth-provider';
+import { useRouter } from 'next/navigation';
 
 export interface MainLayoutProps {
   children: React.ReactNode;
 }
 
-const navigationItems: SidebarItem[] = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    href: '/'
-  },
-  {
-    id: 'activities',
-    label: 'Activities',
-    icon: <Calendar className="h-5 w-5" />,
-    href: '/activities'
-  },
-  {
-    id: 'projects',
-    label: 'Projects',
-    icon: <Briefcase className="h-5 w-5" />,
-    href: '/projects'
-  },
-  {
-    id: 'clients',
-    label: 'Clients',
-    icon: <Users className="h-5 w-5" />,
-    href: '/clients'
-  },
-  {
-    id: 'logout',
-    label: 'Logout',
-    icon: <LogOut className="h-5 w-5" />,
-    href: '/login'
-  },
-];
-
 export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  // Filter navigation items based on user role
+  const getNavigationItems = (): SidebarItem[] => {
+    const baseItems: SidebarItem[] = [
+      {
+        id: 'dashboard',
+        label: 'Dashboard',
+        icon: <LayoutDashboard className="h-5 w-5" />,
+        href: '/'
+      },
+      {
+        id: 'activities',
+        label: 'Activities',
+        icon: <Calendar className="h-5 w-5" />,
+        href: '/activities'
+      },
+    ];
+
+    // Add admin-only items
+    if (user?.role === 'admin') {
+      baseItems.push(
+        {
+          id: 'projects',
+          label: 'Projects',
+          icon: <Briefcase className="h-5 w-5" />,
+          href: '/projects'
+        },
+        {
+          id: 'clients',
+          label: 'Clients',
+          icon: <Users className="h-5 w-5" />,
+          href: '/clients'
+        }
+      );
+    }
+
+    // Add logout
+    baseItems.push({
+      id: 'logout',
+      label: 'Logout',
+      icon: <LogOut className="h-5 w-5" />,
+      onClick: async () => {
+        await logout();
+      }
+    });
+
+    return baseItems;
+  };
 
   return (
     <div className="h-screen flex flex-col">
       {/* AppBar */}
       <AppBar
-        title="CRA App"
+        title={user ? `CRA App - ${user.firstName} ${user.lastName}` : 'CRA App'}
         onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         showSearch={false}
       />
@@ -66,7 +85,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <div className="hidden lg:block w-64 flex-shrink-0">
           <Sidebar
             isOpen={true}
-            items={navigationItems}
+            items={getNavigationItems()}
           />
         </div>
 
@@ -74,7 +93,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
-          items={navigationItems}
+          items={getNavigationItems()}
           className="lg:hidden"
         />
 

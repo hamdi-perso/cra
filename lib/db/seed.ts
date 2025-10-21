@@ -4,6 +4,7 @@
  */
 
 import { getDatabase } from './init';
+import { hashPassword } from '../auth/password';
 import type { User, Client, Project, Activity } from './schema';
 
 function generateId(): string {
@@ -14,7 +15,7 @@ function getCurrentTimestamp(): string {
   return new Date().toISOString();
 }
 
-export function seedDatabase() {
+export async function seedDatabase() {
   const db = getDatabase();
 
   try {
@@ -59,9 +60,11 @@ export function seedDatabase() {
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
+    // Hash password for all users
+    const hashedPassword = await hashPassword('password123');
+
     users.forEach((user) => {
-      // TODO: Password will be hashed with bcrypt in Phase 2
-      insertUser.run(user.id, user.email, 'password123', user.firstName, user.lastName, user.role, user.createdAt);
+      insertUser.run(user.id, user.email, hashedPassword, user.firstName, user.lastName, user.role, user.createdAt);
     });
 
     console.log(`✅ Seeded ${users.length} users`);

@@ -1,10 +1,34 @@
+'use client';
+
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LogIn } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/app/providers/auth-provider';
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await login(email, password);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 p-4">
       <Card className="w-full max-w-md p-8 animate-fade-in">
@@ -19,7 +43,13 @@ export default function LoginPage() {
         </div>
 
         {/* Login Form */}
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
+
           <div className="space-y-2">
             <label
               htmlFor="email"
@@ -31,7 +61,10 @@ export default function LoginPage() {
               id="email"
               type="email"
               placeholder="employee@cra.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
 
@@ -46,7 +79,10 @@ export default function LoginPage() {
               id="password"
               type="password"
               placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
 
@@ -55,6 +91,7 @@ export default function LoginPage() {
               <input
                 type="checkbox"
                 className="rounded border-neutral-300 dark:border-neutral-700"
+                disabled={loading}
               />
               <span className="text-neutral-600 dark:text-neutral-400">
                 Remember me
@@ -68,9 +105,9 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <Button type="submit" className="w-full gap-2">
+          <Button type="submit" className="w-full gap-2" disabled={loading}>
             <LogIn className="h-4 w-4" />
-            Sign In
+            {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
 
